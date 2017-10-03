@@ -9,7 +9,7 @@
 #include <TCanvas.h>
 #include <algorithm>
 
-class Analysis {
+class DataAccess {
 public :
     TTree *fChain;   //!pointer to the analyzed TTree or TChain
     Int_t fCurrent; //!current Tree number in a TChain
@@ -20,9 +20,9 @@ public :
     // List of branches
     TBranch *b_adc;   //!
 
-    Analysis(TTree *tree = 0);
+    DataAccess(TTree *tree = 0);
 
-    virtual ~Analysis();
+    virtual ~DataAccess();
 
     virtual Int_t Cut(Long64_t entry);
 
