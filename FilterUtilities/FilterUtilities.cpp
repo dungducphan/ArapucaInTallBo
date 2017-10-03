@@ -4,45 +4,46 @@
 
 #include "FilterUtilities.h"
 
-
-FilterUtilities::FilterUtilities(unsigned int userNumberOfPoints, unsigned int userExtrapolationDegree) {
-    kNumberOfPoints = userNumberOfPoints;
-    kArrayMargin = (kNumberOfPoints - 1) / 2;
-    kExtrapolationDegree = userExtrapolationDegree;
-    GSFilter = new GolaySavitzkyCoeff(kNumberOfPoints, kExtrapolationDegree);
-
-    kFuncSmoothingCoeffs = (double*)malloc(kNumberOfPoints * sizeof(double));
-    GSFilter->GetFuncSmoothingCoeffs(kFuncSmoothingCoeffs);
-
-    kFirstDerivativeSmoothingCoeffs = (double*)malloc(kNumberOfPoints * sizeof(double));
-    GSFilter->GetFirstDerivativeSmoothingCoeffs(kFirstDerivativeSmoothingCoeffs);
+FilterUtilities::FilterUtilities() {
 }
 
 FilterUtilities::~FilterUtilities() {}
 
-void FilterUtilities::Filter(double *Waveform, double *FilteredWaveform, unsigned int NumberOfSamplingPoints) {
-    for (int i = kArrayMargin; i < NumberOfSamplingPoints - kArrayMargin; i++) {
-        FilteredWaveform[i] = ApplyFilteringWindow(Waveform, i);
-    }
-
-    for (int i = 0; i < kArrayMargin; i++) {
-        FilteredWaveform[i] = FilteredWaveform[kArrayMargin];
-    }
-
-    for (int i = NumberOfSamplingPoints - kArrayMargin; i < NumberOfSamplingPoints; i++) {
-        FilteredWaveform[i] = FilteredWaveform[NumberOfSamplingPoints - kArrayMargin - 1];
-    }
+void FilterUtilities::AddGolaySavitzkyFilter(unsigned int NumberOfPoints, unsigned int Degree) {
+    GSFilterCollection.push_back(new GolaySavitzkyCoeff(NumberOfPoints, Degree));
+    FilterSequence.push_back(kGS);
 }
 
-double FilterUtilities::ApplyFilteringWindow(double *waveform, unsigned int sampleIdx) {
-    unsigned int startingIdx = sampleIdx - kArrayMargin;
-    double FilterValueAtSampleIdx = 0;
-    for (int i = 0; i < kNumberOfPoints; i++) {
-        FilterValueAtSampleIdx += waveform[startingIdx + i] * kFuncSmoothingCoeffs[i];
+void FilterUtilities::Filter(double *waveform, double *filteredWaveform, unsigned int sampleIdx) {
+    unsigned int GSFilterIdx = 0;
+    unsigned int FFTFilterIdx = 0;
+    intermediateInput   = (double*)malloc(sampleIdx * sizeof(double));
+    intermediateOutput  = (double*)malloc(sampleIdx * sizeof(double));
+    std::copy(waveform, waveform + sampleIdx, intermediateInput);
+    for (int i = 0; i < FilterSequence.size(); i++) {
+        switch (FilterSequence.at(i)) {
+            case kGS: {
+                GSFilterCollection.at(GSFilterIdx)->Filter(intermediateInput, intermediateOutput, sampleIdx);
+                std::copy(intermediateOutput, intermediateOutput + sampleIdx, intermediateInput);
+                GSFilterIdx++;
+                break;
+            }
+            case kFFT: {
+                FFTFilterIdx++;
+                break;
+            }
+            default: {
+                std::cout << "Unknown filter types." << std::endl;
+                break;
+            }
+        }
     }
 
-    return FilterValueAtSampleIdx;
+    std::copy(intermediateOutput, intermediateOutput + sampleIdx, filteredWaveform);
 }
+
+
+
 
 
 

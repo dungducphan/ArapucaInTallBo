@@ -4,6 +4,7 @@
 GolaySavitzkyCoeff::GolaySavitzkyCoeff(unsigned int userNumberOfPoints, unsigned int userExtrapolationDegree) {
     SetExtrapolationDegree(userExtrapolationDegree);
     SetNumberOfPoints(userNumberOfPoints);
+    kArrayMargin = (kNumberOfPoints - 1) / 2;
     CalculateJMatrix();
     CalculateAEvenMatrix();
     CalculateAOddMatrix();
@@ -58,14 +59,14 @@ void GolaySavitzkyCoeff::PrintMatrices() {
     std::cout << std::endl;
 
     std::cout << "The function smoothing coefficents using Golay-Savitzky filter are: " << std::endl;
-    for (unsigned int i = 0; i < NumberOfPoints; i++) {
-        std::cout << "A[" << i << "] = " << std::setw(12) << *(FuncSmoothingCoeffs + i) << "." << std::endl;
+    for (unsigned int i = 0; i < kNumberOfPoints; i++) {
+        std::cout << "A[" << i << "] = " << std::setw(12) << *(kFuncSmoothingCoeffs + i) << "." << std::endl;
     }
     std::cout << std::endl;
 
     std::cout << "The first derivative smoothing coefficents using Golay-Savitzky filter are: " << std::endl;
-    for (unsigned int i = 0; i < NumberOfPoints; i++) {
-        std::cout << "B[" << i << "] = " << std::setw(12) << *(FirstDerivativeSmoothingCoeffs + i) << "." << std::endl;
+    for (unsigned int i = 0; i < kNumberOfPoints; i++) {
+        std::cout << "B[" << i << "] = " << std::setw(12) << *(kFirstDerivativeSmoothingCoeffs + i) << "." << std::endl;
     }
     std::cout << std::endl;
 
@@ -74,39 +75,39 @@ void GolaySavitzkyCoeff::PrintMatrices() {
 
 void GolaySavitzkyCoeff::SetNumberOfPoints(unsigned int userNumberOfPoints) {
     if (userNumberOfPoints % 2 == 1) {
-        NumberOfPoints = userNumberOfPoints;
+        kNumberOfPoints = userNumberOfPoints;
     } else {
         std::cout << "\t WARNING: Number of interpolation points has to be an odd integer." << std::endl;
         std::cout << "\t WARNING: Filter algorithm automatically sets number of points to " << userNumberOfPoints + 1 << "." << std::endl;
-        NumberOfPoints = userNumberOfPoints + 1;
+        kNumberOfPoints = userNumberOfPoints + 1;
     }
 
     return;
 }
 
 void GolaySavitzkyCoeff::SetExtrapolationDegree(unsigned int userExtrapolationDegree) {
-    ExtrapolationDegree = userExtrapolationDegree;
+    kExtrapolationDegree = userExtrapolationDegree;
     return;
 }
 
 void GolaySavitzkyCoeff::CalculateJMatrix() {
-    JArray = (double*) malloc(NumberOfPoints * ExtrapolationDegree * sizeof(double));
-    for (int i = 0; i < NumberOfPoints; i++) {
-        for (int j = 0; j < ExtrapolationDegree; j++) {
-            if ((- ((NumberOfPoints - 1) / 2) + i == 0) && (j == 0)) {
-                *(JArray + ExtrapolationDegree * i + j) = 1;
+    JArray = (double*) malloc(kNumberOfPoints * kExtrapolationDegree * sizeof(double));
+    for (int i = 0; i < kNumberOfPoints; i++) {
+        for (int j = 0; j < kExtrapolationDegree; j++) {
+            if ((- ((kNumberOfPoints - 1) / 2) + i == 0) && (j == 0)) {
+                *(JArray + kExtrapolationDegree * i + j) = 1;
             } else {
-                *(JArray + ExtrapolationDegree * i + j) = TMath::Power(- (((double) NumberOfPoints - 1) / 2) + (double) i, (double) j);
+                *(JArray + kExtrapolationDegree * i + j) = TMath::Power(- (((double) kNumberOfPoints - 1) / 2) + (double) i, (double) j);
             }
         }
     }
 
-    JMatrix = new TMatrixD(NumberOfPoints, ExtrapolationDegree, JArray);
+    JMatrix = new TMatrixD(kNumberOfPoints, kExtrapolationDegree, JArray);
 
-    JTransposeMatrix = new TMatrixD(ExtrapolationDegree, NumberOfPoints);
+    JTransposeMatrix = new TMatrixD(kExtrapolationDegree, kNumberOfPoints);
     JTransposeMatrix->Transpose(*JMatrix);
 
-    JJTransposeMatrix = new TMatrixD(ExtrapolationDegree, ExtrapolationDegree);
+    JJTransposeMatrix = new TMatrixD(kExtrapolationDegree, kExtrapolationDegree);
     JJTransposeMatrix->Mult(*JTransposeMatrix, *JMatrix);
     JJTransposeArray = JJTransposeMatrix->GetMatrixArray();
 
@@ -115,28 +116,28 @@ void GolaySavitzkyCoeff::CalculateJMatrix() {
 
 void GolaySavitzkyCoeff::CalculateAEvenMatrix() {
     unsigned int NumberOfColumns;
-    if (ExtrapolationDegree % 2 == 0) {
-        NumberOfColumns = (int)(ExtrapolationDegree / 2);
+    if (kExtrapolationDegree % 2 == 0) {
+        NumberOfColumns = (int)(kExtrapolationDegree / 2);
     } else {
-        NumberOfColumns = (int)(ExtrapolationDegree / 2) + 1;
+        NumberOfColumns = (int)(kExtrapolationDegree / 2) + 1;
     }
-    unsigned int NumberOfRows    = NumberOfPoints;
+    unsigned int NumberOfRows    = kNumberOfPoints;
 
     double* JEvenArray = (double*) malloc(NumberOfRows * NumberOfColumns * sizeof(double));
     for (unsigned int i = 0; i < NumberOfRows; i++) {
-        for (unsigned int j = 0; j < ExtrapolationDegree; j++) {
+        for (unsigned int j = 0; j < kExtrapolationDegree; j++) {
             if (j % 2 == 0) {
-                *(JEvenArray + i*NumberOfColumns + (int)(j/2)) = *(JArray + i*ExtrapolationDegree + j);
+                *(JEvenArray + i*NumberOfColumns + (int)(j/2)) = *(JArray + i*kExtrapolationDegree + j);
             }
         }
     }
     JEvenMatrix = new TMatrixD(NumberOfRows, NumberOfColumns, JEvenArray);
 
     double* JJTransposeEvenArray = (double*) malloc(NumberOfColumns * NumberOfColumns * sizeof(double));
-    for (unsigned int i = 0; i < ExtrapolationDegree; i++) {
-        for (unsigned int j = 0; j < ExtrapolationDegree; j++) {
+    for (unsigned int i = 0; i < kExtrapolationDegree; i++) {
+        for (unsigned int j = 0; j < kExtrapolationDegree; j++) {
             if (j % 2 == 0 && i % 2 == 0) {
-                *(JJTransposeEvenArray + (int)(i/2)*NumberOfColumns + (int)(j/2)) = *(JJTransposeArray + i*ExtrapolationDegree + j);
+                *(JJTransposeEvenArray + (int)(i/2)*NumberOfColumns + (int)(j/2)) = *(JJTransposeArray + i*kExtrapolationDegree + j);
             }
         }
     }
@@ -161,28 +162,28 @@ void GolaySavitzkyCoeff::CalculateAEvenMatrix() {
 
 void GolaySavitzkyCoeff::CalculateAOddMatrix() {
     unsigned int NumberOfColumns;
-    if (ExtrapolationDegree % 2 == 0) {
-        NumberOfColumns = (int)(ExtrapolationDegree / 2);
+    if (kExtrapolationDegree % 2 == 0) {
+        NumberOfColumns = (int)(kExtrapolationDegree / 2);
     } else {
-        NumberOfColumns = (int)(ExtrapolationDegree / 2);
+        NumberOfColumns = (int)(kExtrapolationDegree / 2);
     }
-    unsigned int NumberOfRows    = NumberOfPoints;
+    unsigned int NumberOfRows    = kNumberOfPoints;
 
     double* JOddArray = (double*) malloc(NumberOfRows * NumberOfColumns * sizeof(double));
     for (unsigned int i = 0; i < NumberOfRows; i++) {
-        for (unsigned int j = 0; j < ExtrapolationDegree; j++) {
+        for (unsigned int j = 0; j < kExtrapolationDegree; j++) {
             if (j % 2 == 1) {
-                *(JOddArray + i*NumberOfColumns + (int)(j/2)) = *(JArray + i*ExtrapolationDegree + j);
+                *(JOddArray + i*NumberOfColumns + (int)(j/2)) = *(JArray + i*kExtrapolationDegree + j);
             }
         }
     }
     JOddMatrix = new TMatrixD(NumberOfRows, NumberOfColumns, JOddArray);
 
     double* JJTransposeOddArray = (double*) malloc(NumberOfColumns * NumberOfColumns * sizeof(double));
-    for (unsigned int i = 0; i < ExtrapolationDegree; i++) {
-        for (unsigned int j = 0; j < ExtrapolationDegree; j++) {
+    for (unsigned int i = 0; i < kExtrapolationDegree; i++) {
+        for (unsigned int j = 0; j < kExtrapolationDegree; j++) {
             if (j % 2 == 1 && i % 2 == 1) {
-                *(JJTransposeOddArray + (int)(i/2)*NumberOfColumns + (int)(j/2)) = *(JJTransposeArray + i*ExtrapolationDegree + j);
+                *(JJTransposeOddArray + (int)(i/2)*NumberOfColumns + (int)(j/2)) = *(JJTransposeArray + i*kExtrapolationDegree + j);
             }
         }
     }
@@ -209,52 +210,59 @@ void GolaySavitzkyCoeff::CalculateCMatrix() {
     double Determinant;
     JJTransposeMatrix->InvertFast(&Determinant);
 
-    CMatrix = new TMatrixD(ExtrapolationDegree, NumberOfPoints);
+    CMatrix = new TMatrixD(kExtrapolationDegree, kNumberOfPoints);
     CMatrix->Mult(*JJTransposeMatrix, *JTransposeMatrix);
 
     return;
 }
 
 void GolaySavitzkyCoeff::CalculateFuncSmoothingCoeffs() {
-    FuncSmoothingCoeffs = (double*) malloc(NumberOfPoints * sizeof(double));
-    AEvenMatrix->ExtractRow(0, 0, FuncSmoothingCoeffs);
+    kFuncSmoothingCoeffs = (double*) malloc(kNumberOfPoints * sizeof(double));
+    AEvenMatrix->ExtractRow(0, 0, kFuncSmoothingCoeffs);
 
     return;
 }
 
 void GolaySavitzkyCoeff::CalculateFirstDerivativeSmoothingCoeffs() {
-    FirstDerivativeSmoothingCoeffs = (double*) malloc(NumberOfPoints * sizeof(double));
-    AOddMatrix->ExtractRow(0, 0, FirstDerivativeSmoothingCoeffs);
+    kFirstDerivativeSmoothingCoeffs = (double*) malloc(kNumberOfPoints * sizeof(double));
+    AOddMatrix->ExtractRow(0, 0, kFirstDerivativeSmoothingCoeffs);
 
     return;
 }
 
 void GolaySavitzkyCoeff::GetFuncSmoothingCoeffs(double *accessPointer) {
-    std::copy(FuncSmoothingCoeffs, FuncSmoothingCoeffs + NumberOfPoints, accessPointer);
+    std::copy(kFuncSmoothingCoeffs, kFuncSmoothingCoeffs + kNumberOfPoints, accessPointer);
 }
 
 void GolaySavitzkyCoeff::GetFirstDerivativeSmoothingCoeffs(double *accessPointer) {
-    std::copy(FirstDerivativeSmoothingCoeffs, FirstDerivativeSmoothingCoeffs + NumberOfPoints, accessPointer);
+    std::copy(kFirstDerivativeSmoothingCoeffs, kFirstDerivativeSmoothingCoeffs + kNumberOfPoints, accessPointer);
+}
+
+void GolaySavitzkyCoeff::Filter(double *Waveform, double *FilteredWaveform, unsigned int NumberOfSamplingPoints) {
+    for (int i = kArrayMargin; i < NumberOfSamplingPoints - kArrayMargin; i++) {
+        FilteredWaveform[i] = ApplyFilteringWindow(Waveform, i);
+    }
+
+    for (int i = 0; i < kArrayMargin; i++) {
+        FilteredWaveform[i] = FilteredWaveform[kArrayMargin];
+    }
+
+    for (int i = NumberOfSamplingPoints - kArrayMargin; i < NumberOfSamplingPoints; i++) {
+        FilteredWaveform[i] = FilteredWaveform[NumberOfSamplingPoints - kArrayMargin - 1];
+    }
+}
+
+double GolaySavitzkyCoeff::ApplyFilteringWindow(double *waveform, unsigned int sampleIdx) {
+    unsigned int startingIdx = sampleIdx - kArrayMargin;
+    double FilterValueAtSampleIdx = 0;
+    for (int i = 0; i < kNumberOfPoints; i++) {
+        FilterValueAtSampleIdx += waveform[startingIdx + i] * kFuncSmoothingCoeffs[i];
+    }
+
+    return FilterValueAtSampleIdx;
 }
 
 /*
-
-void GolaySavitzkyCoeff::Filter(double* Waveform, double* FilteredWaveform) {
-    int HalfNumberOfPoints = (int)(kNumberOfPoints / 2);
-    for (unsigned int i = HalfNumberOfPoints; i < 1024 - HalfNumberOfPoints; i++) {
-        *(FilteredWaveform + i) = 0;
-        for (int j = -HalfNumberOfPoints; j < HalfNumberOfPoints + 1; j++) {
-            *(FilteredWaveform + i) += *(Waveform + i + j) * *(kFuncSmoothingCoeffs + j + HalfNumberOfPoints);
-        }
-    }
-    for (unsigned int i = 0; i < HalfNumberOfPoints; i++) {
-        *(FilteredWaveform + i) = *(FilteredWaveform + HalfNumberOfPoints);
-        *(FilteredWaveform + 1023 - i) = *(FilteredWaveform + 1023 - HalfNumberOfPoints);
-    }
-
-    return;
-}
-
 void GolaySavitzkyCoeff::FirstDerivative(double* Waveform, double* FilteredFirstDerivative, double VariableStep) {
     int HalfNumberOfPoints = (int)(kNumberOfPoints / 2);
     for (unsigned int i = HalfNumberOfPoints; i < 1024 - HalfNumberOfPoints; i++) {

@@ -7,26 +7,21 @@
 
 #include "GolaySavitzkyCoeff.h"
 
+enum FilterTypes {kGS, kFFT};
+
 class FilterUtilities {
 public:
-    FilterUtilities(unsigned int userNumberOfPoints, unsigned int userExtrapolationDegree);
+    FilterUtilities();
     virtual ~FilterUtilities();
 
+    virtual void AddGolaySavitzkyFilter(unsigned int NumberOfPoints, unsigned int Degree);
     virtual void Filter(double* waveform, double* filteredWaveform, unsigned int sampleIdx);
-    // virtual void FirstDerivative(double* Waveform, double* FilteredWaveform, double VariableStep = 1.);
 
 private:
-    GolaySavitzkyCoeff* GSFilter;
-
-    unsigned int kNumberOfPoints;
-    unsigned int kArrayMargin;
-    unsigned int kExtrapolationDegree;
-
-    double*   kFuncSmoothingCoeffs;
-    double*   kFirstDerivativeSmoothingCoeffs;
-
-    // Private methods
-    virtual double ApplyFilteringWindow(double* waveform, unsigned int sampleIdx);
+    double* intermediateInput;
+    double* intermediateOutput;
+    std::vector<GolaySavitzkyCoeff*> GSFilterCollection;
+    std::vector<FilterTypes> FilterSequence;
 };
 
 #endif //TALLBOANALYSIS_FILTERUTILITIES_H
