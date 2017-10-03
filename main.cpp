@@ -7,7 +7,6 @@
 #include <TMultiGraph.h>
 
 #include "ROOTUtilities/Analysis.h"
-#include "FilterUtilities/GolaySavitzkyCoeff.h"
 #include "FilterUtilities/FilterUtilities.h"
 
 int main() {

@@ -1,0 +1,1 @@
+add_library(FilterUtilities FilterUtilities.cpp FilterUtilities.h GolaySavitzkyCoeff.cpp GolaySavitzkyCoeff.h)
