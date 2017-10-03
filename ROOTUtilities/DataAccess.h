@@ -1,5 +1,5 @@
-#ifndef Analysis_h
-#define Analysis_h
+#ifndef DataAccess_h
+#define DataAccess_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -40,7 +40,7 @@ public :
 
     virtual Long64_t GetNEntries();
 
-    virtual void AccessEntry(Long64_t ientry, Int_t* accessPointer);
+    virtual void AccessEntry(Long64_t ientry, double *accessPointer);
 };
 
 #endif
