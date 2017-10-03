@@ -8,8 +8,6 @@ find_package(ROOT REQUIRED)
 include(${ROOT_USE_FILE})
 
 # extra packages (written by Dung)
-include_directories (${PROJECT_SOURCE_DIR}/FilterUtilities)
-include_directories (${PROJECT_SOURCE_DIR}/ROOTUtilities)
 add_subdirectory(FilterUtilities)
 add_subdirectory(ROOTUtilities)
 set(EXTRA_PACKAGES ${EXTRA_PACKAGES} FilterUtilities)
