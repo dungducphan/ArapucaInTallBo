@@ -1,5 +1,3 @@
-#define Analysis_cxx
-
 #include "DataAccess.h"
 
 DataAccess::DataAccess(TTree *tree) : fChain(0) {
@@ -79,10 +77,12 @@ Long64_t DataAccess::GetNEntries() {
     return fChain->GetEntriesFast();
 }
 
-void DataAccess::AccessEntry(Long64_t ientry, Int_t *accessPointer) {
+void DataAccess::AccessEntry(Long64_t ientry, double *accessPointer) {
     Long64_t ientryChain = LoadTree(ientry);
     Long64_t nb = fChain->GetEntry(ientry);
-    std::copy(adc, adc + 1650, accessPointer);
+    for (int i = 0; i < 1650; i++) {
+        accessPointer[i] = (double) adc[i];
+    }
 }
 
 
