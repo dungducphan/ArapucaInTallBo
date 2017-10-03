@@ -261,24 +261,3 @@ double GolaySavitzkyCoeff::ApplyFilteringWindow(double *waveform, unsigned int s
 
     return FilterValueAtSampleIdx;
 }
-
-/*
-void GolaySavitzkyCoeff::FirstDerivative(double* Waveform, double* FilteredFirstDerivative, double VariableStep) {
-    int HalfNumberOfPoints = (int)(kNumberOfPoints / 2);
-    for (unsigned int i = HalfNumberOfPoints; i < 1024 - HalfNumberOfPoints; i++) {
-        *(FilteredFirstDerivative + i) = 0;
-        for (int j = -HalfNumberOfPoints; j < HalfNumberOfPoints + 1; j++) {
-            *(FilteredFirstDerivative + i) += *(Waveform + i + j) * *(kFirstDerivativeSmoothingCoeffs + j + HalfNumberOfPoints);
-        }
-        *(FilteredFirstDerivative + i) = *(FilteredFirstDerivative + i) / VariableStep;
-    }
-
-    for (unsigned int i = 0; i < HalfNumberOfPoints; i++) {
-        *(FilteredFirstDerivative + i) = *(FilteredFirstDerivative + HalfNumberOfPoints);
-        *(FilteredFirstDerivative + 1023 - i) = *(FilteredFirstDerivative + 1023 - HalfNumberOfPoints);
-    }
-
-    return;
-}
-
-*/

@@ -1,6 +1,14 @@
 #ifndef GSFilter_h
 #define GSFilter_h
 
+/*
+ * Implementation of Golay-Savitzky filter
+ * See more <https://en.wikipedia.org/wiki/Savitzky–Golay_filter>
+ * Dung Phan
+ * The University of Texas at Austin
+ * Oct 3rd, 2017
+ */
+
 #include <cmath>
 #include <iomanip>
 #include <algorithm>
@@ -28,7 +36,7 @@ public:
 
 protected:
 
-    // protected set
+    /* -- protected set methods -- */
     virtual void SetNumberOfPoints(unsigned int);
     virtual void SetExtrapolationDegree(unsigned int);
 
