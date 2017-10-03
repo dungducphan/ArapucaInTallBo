@@ -1,14 +1,6 @@
 #ifndef GSFilter_h
 #define GSFilter_h
 
-/*
- * Implementation of Golay-Savitzky filter
- * See more <https://en.wikipedia.org/wiki/Savitzky–Golay_filter>
- * Dung Phan
- * The University of Texas at Austin
- * Oct 3rd, 2017
- */
-
 #include <cmath>
 #include <iomanip>
 #include <algorithm>
@@ -25,13 +17,58 @@
 
 class GolaySavitzkyCoeff {
 public:
+    /*
+     * This class performs Golay-Savitzky filter.
+     * See more: https://en.wikipedia.org/wiki/Savitzky–Golay_filter.
+     *
+     * HOW TO USE:
+     *
+     *      - Create a GolaySavitzkyCoeff object.
+     *      - Specify the number of points in a filtering window and the degree of filter polynomial.
+     *      - To filter a waveform, call Filter(input, output, N).
+     *      - The argument 'input' and 'output' are double array of N elements.
+     *      - To print the smoothing matrices, call PrintMatrices().
+     *      - To interface with a different class, call GetFuncSmoothingCoeffs().
+     *
+     * Example usage:
+     *
+     *      GolaySavitzkyCoeff* GSfilter = new GolaySavitzkyCoeff(5, 4);
+     *      GSfilter->Filter(adc, filteredadc);
+     *      GSfilter->PrintMatrices();
+     *      GSfilter->GetFuncSmoothingCoeffs(outputCoeffs);
+     */
     GolaySavitzkyCoeff(unsigned int userNumberOfPoints, unsigned int userExtrapolationDegree);
     virtual  ~GolaySavitzkyCoeff();
+
+    /*
+     * Printing smoothing matrices for debug purposes.
+     */
     virtual void PrintMatrices();
 
-    // interfacing methods
+    /*
+     * Calculating the function smoothing coefficients and return them
+     * as an array back to accessPointer.
+     *
+     * Use this to interface GolaySavitzkyCoeff with another class.
+     */
     virtual void GetFuncSmoothingCoeffs(double* accessPointer);
+
+    /*
+     * Calculating the first derivative smoothing coefficients and
+     * return them as an array back to accessPointer.
+     *
+     * Use this to interface GolaySavitzkyCoeff with another class.
+     */
     virtual void GetFirstDerivativeSmoothingCoeffs(double* accessPointer);
+
+    /*
+     * Smoothing a waveform (array of values) using Golay-Savitzky
+     * method.
+     *
+     *      - waveform          : input array of 'sampleIdx' double elements.
+     *      - filteredWaveform  : input array of 'sampleIdx' double elements.
+     *      - sampleIdx         : number of elements in a waveform.
+     */
     virtual void Filter(double* waveform, double* filteredWaveform, unsigned int sampleIdx);
 
 protected:
