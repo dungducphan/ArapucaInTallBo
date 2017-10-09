@@ -7,15 +7,16 @@
 FFTCutoff::FFTCutoff(unsigned int sampleIdx) {
     kNumberOfSamplingPoints = sampleIdx;
     kCutByRange = true;
-    input                   = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * kNumberOfSamplingPoints);
-    filteredOutput          = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * kNumberOfSamplingPoints);
-    intermediateSpectrum    = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * kNumberOfSamplingPoints);
 }
 
 FFTCutoff::~FFTCutoff() {
 }
 
 void FFTCutoff::Filter(double *waveform, double *filteredWaveform) {
+    input                   = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * kNumberOfSamplingPoints);
+    filteredOutput          = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * kNumberOfSamplingPoints);
+    intermediateSpectrum    = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * kNumberOfSamplingPoints);
+
     ForwardFFT(waveform);
     CutOffHighFreqNoise();
     BackwardFFT(filteredWaveform);

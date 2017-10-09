@@ -2,7 +2,7 @@
 
 DataAccess::DataAccess(TTree *tree) : fChain(0) {
     if (tree == 0) {
-        TFile *f = (TFile *) gROOT->GetListOfFiles()->FindObject(
+        f = (TFile *) gROOT->GetListOfFiles()->FindObject(
                 "../FreeRun-2017-09-22-16-32-Threshold_15-SubRun-ch0.root");
         if (!f || !f->IsOpen()) {
             f = new TFile("../FreeRun-2017-09-22-16-32-Threshold_15-SubRun-ch0.root");
@@ -84,5 +84,4 @@ void DataAccess::AccessEntry(Long64_t ientry, double *accessPointer) {
         accessPointer[i] = (double) adc[i];
     }
 }
-
 

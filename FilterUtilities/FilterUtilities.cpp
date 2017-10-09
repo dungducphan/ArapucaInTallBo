@@ -11,6 +11,8 @@ FilterUtilities::~FilterUtilities() {}
 
 void FilterUtilities::SetNumberOfSamplingPoints(unsigned int numberOfSamplingPoints) {
     kNumberOfSamplingPoints = numberOfSamplingPoints;
+    intermediateInput = (double *) malloc(kNumberOfSamplingPoints * sizeof(double));
+    intermediateOutput = (double *) malloc(kNumberOfSamplingPoints * sizeof(double));
 }
 
 void FilterUtilities::AddGolaySavitzkyFilter(unsigned int NumberOfPoints, unsigned int Degree) {
@@ -36,9 +38,16 @@ void FilterUtilities::AddFFTCutoffFilter(FreqRange cutRange) {
      * Push a kFFT value into the FilterSequence to notify a FFTfilter
      * to be performed.
      */
+
+    /* TODO
+     *  - Checking if free-malloc problem happen with local pointers.
+     *
     FFTCutoff *fftCutoff = new FFTCutoff(kNumberOfSamplingPoints);
     fftCutoff->SetFreqCutoffRange(cutRange);
-    FFTCutoffCollection.push_back(fftCutoff);
+    */
+
+    FFTCutoffCollection.push_back(new FFTCutoff(kNumberOfSamplingPoints));
+    FFTCutoffCollection.back()->SetFreqCutoffRange(cutRange);
     FilterSequence.push_back(kFFT);
 }
 
@@ -54,9 +63,16 @@ void FilterUtilities::AddFFTCutoffFilterByValue(unsigned int freqCutValue) {
      * Push a kFFT value into the FilterSequence to notify a FFTfilter
      * to be performed.
      */
+
+    /* TODO
+     *  - Checking if free-malloc problem happen with local pointers.
+     *
     FFTCutoff *fftCutoff = new FFTCutoff(kNumberOfSamplingPoints);
     fftCutoff->SetFreqCutoffValue(freqCutValue);
-    FFTCutoffCollection.push_back(fftCutoff);
+    */
+
+    FFTCutoffCollection.push_back(new FFTCutoff(kNumberOfSamplingPoints));
+    FFTCutoffCollection.back()->SetFreqCutoffValue(freqCutValue);
     FilterSequence.push_back(kFFT);
 }
 
@@ -64,10 +80,7 @@ void FilterUtilities::Filter(double *waveform, double *filteredWaveform) {
     unsigned int GSFilterIdx = 0;
     unsigned int FFTFilterIdx = 0;
 
-    intermediateInput = (double *) malloc(kNumberOfSamplingPoints * sizeof(double));
-    intermediateOutput = (double *) malloc(kNumberOfSamplingPoints * sizeof(double));
     std::copy(waveform, waveform + kNumberOfSamplingPoints, intermediateInput);
-
     for (int i = 0; i < FilterSequence.size(); i++) {
         switch (FilterSequence.at(i)) {
             case kGS: {
@@ -77,19 +90,23 @@ void FilterUtilities::Filter(double *waveform, double *filteredWaveform) {
                 GSFilterIdx++;
                 break;
             }
+            /*
+             * TODO
+             *  - Debug malloc problem somewhere in this FFT filter.
+             */
             case kFFT: {
                 FFTCutoffCollection.at(FFTFilterIdx)->Filter(intermediateInput, intermediateOutput);
                 std::copy(intermediateOutput, intermediateOutput + kNumberOfSamplingPoints, intermediateInput);
                 FFTFilterIdx++;
                 break;
             }
+            /**/
             default: {
                 std::cout << "Unknown filter types." << std::endl;
                 break;
             }
         }
     }
-
     std::copy(intermediateOutput, intermediateOutput + kNumberOfSamplingPoints, filteredWaveform);
 }
 

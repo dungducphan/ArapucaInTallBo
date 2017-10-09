@@ -13,6 +13,7 @@ class DataAccess {
 public :
     TTree *fChain;   //!pointer to the analyzed TTree or TChain
     Int_t fCurrent; //!current Tree number in a TChain
+    TFile *f;
 
     // Declaration of leaf types
     Int_t adc[1650];
